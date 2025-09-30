@@ -25,7 +25,8 @@ The CH32V003's Timer 1 (TIM1) generates a high-frequency PWM signal at **200 kHz
 The sine wave is approximated using a lookup table with 100 pre-calculated samples. Each sample represents the PWM duty cycle value for that point in the sine wave.
 
 **Sample Calculation Formula:**
-$$\text{sine\_table}[n] = \left\lfloor \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2} \right\rfloor$$
+
+$\text{sine\_table}[n] = \left\lfloor \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2} \right\rfloor$
 
 Where:
 
