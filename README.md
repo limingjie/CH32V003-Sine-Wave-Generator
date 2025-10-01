@@ -26,7 +26,7 @@ The sine wave is approximated using a lookup table with 100 pre-calculated sampl
 
 **Sample Calculation Formula:**
 
-$$\text{sine\_table}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$$
+$$sine\_table[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$$
 
 Where:
 
