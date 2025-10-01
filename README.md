@@ -1,55 +1,78 @@
 # CH32V003 Sine Wave Generator
 
-![Output](./Images/Output.png)
+A precision sine wave generator implementation using PWM (Pulse Width Modulation) output from the CH32V003 microcontroller. This design achieves optimal performance for output frequencies below 660 Hz.
+
+## Overview
+
+This project demonstrates high-resolution sine wave synthesis using a low-cost RISC-V microcontroller. The implementation combines digital signal processing techniques with analog filtering to produce clean sinusoidal outputs suitable for various applications.
+
+## Circuit Schematic
 
 ![Schematic](./Images/CH32V003-Sine-Wave-Generator.png)
 
-![CH32V003J4M6](./Images/CH32V003J4M6_Pinout_No_Remapping.png)
+## Oscilloscope Output
 
-## How the Sine Wave is Generated
+![Output](./Images/Output.png)
 
-This project generates sine waves using PWM (Pulse Width Modulation) output from the CH32V003 microcontroller. The sine wave generation process involves several key components working together:
+## Technical Implementation
 
-### 1. PWM Signal Generation
+### System Architecture
 
-The CH32V003's Timer 1 (TIM1) generates a high-frequency PWM signal at **200 kHz** on pin PC4. The PWM duty cycle is continuously varied to create the sine wave envelope.
+The sine wave generation system employs a three-stage approach:
 
-**PWM Configuration:**
+1. **Digital Sample Generation**: Lookup table-based sine wave synthesis
+2. **PWM Modulation**: High-frequency carrier modulation at 200 kHz
+3. **Analog Reconstruction**: RC low-pass filtering for signal reconstruction
 
-- PWM Frequency: $f_{PWM} = 200 \text{ kHz}$
+### PWM Signal Generation
+
+The CH32V003's Timer 1 (TIM1) generates a high-frequency PWM signal at 200 kHz on pin PC4. The PWM duty cycle is continuously modulated according to pre-calculated sine wave samples to create the desired waveform envelope.
+
+**PWM Specifications:**
+
+- Carrier Frequency: $f_{PWM} = 200 \text{ kHz}$
 - PWM Period: $T_{PWM} = \frac{1}{f_{PWM}} = 5 \text{ μs}$
-- PWM Resolution: $N_{clocks} = \frac{f_{system}}{f_{PWM}} = \frac{48 \text{ MHz}}{200 \text{ kHz}} = 240 \text{ clocks}$
+- Resolution: $N_{clocks} = \frac{f_{system}}{f_{PWM}} = \frac{48 \text{ MHz}}{200 \text{ kHz}} = 240 \text{ clock cycles}$
 
-### 2. Sine Wave Sample Generation
+### Waveform Synthesis
 
-The sine wave is approximated using a lookup table with 100 pre-calculated samples. Each sample represents the PWM duty cycle value for that point in the sine wave.
+The sine wave is synthesized using a lookup table containing 100 pre-calculated samples. Each sample represents the corresponding PWM duty cycle value for that specific phase angle in the sine wave period.
 
 **Sample Calculation Formula:**
 
 $$\text{sample}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$$
 
-Where:
+**Where:**
 
-- $n = 0, 1, 2, ..., 99$ (sample index)
+- $n = 0, 1, 2, \ldots, 99$ (sample index)
 - $N_{clocks} = 240$ (PWM resolution in clock cycles)
-- The $+1$ offset shifts the sine wave from $[-1, 1]$ to $[0, 2]$ range
-- Division by 2 scales it to $[0, 1]$ range
-- Multiplication by $(N_{clocks} - 1)$ converts to PWM duty cycle values $[0, 239]$
+- The $+1$ offset translates the sine wave from range $[-1, 1]$ to $[0, 2]$
+- Division by 2 normalizes the range to $[0, 1]$
+- Multiplication by $(N_{clocks} - 1)$ scales to PWM duty cycle values $[0, 239]$
 
-### 3. Low-Pass Filtering
+### Analog Signal Reconstruction
 
-The high-frequency PWM signal is converted to an analog sine wave using a simple RC low-pass filter:
+The high-frequency PWM signal is converted to a smooth analog sine wave using a first-order RC low-pass filter. This filter effectively removes the PWM carrier frequency while preserving the sine wave envelope.
 
-**Filter Design:**
+**Filter Specifications:**
 
-- Resistor: $R = 3.3 \text{ kΩ}$
-- Capacitor: $C = 47 \text{ nF}$
-- Cutoff Frequency: $f_c = \frac{1}{2\pi RC} = \frac{1}{2\pi \times 3300 \times 47 \times 10^{-9}} = 1.03 \text{ kHz}$
+- Resistance: $R = 3.3 \text{ kΩ}$
+- Capacitance: $C = 47 \text{ nF}$
+- Cutoff Frequency: $f_c = \frac{1}{2\pi RC} = \frac{1}{2\pi \times 3300 \times 47 \times 10^{-9}} \approx 1.03 \text{ kHz}$
 
-The cutoff frequency is chosen to:
+**Filter Performance:**
 
-- Allow the sine wave frequency (typically 100-1000 Hz) to pass through
-- Attenuate the 200 kHz PWM carrier frequency by approximately $-52 \text{ dB}$
+The cutoff frequency is strategically chosen to:
+
+- Pass sine wave frequencies (typically 100-1000 Hz) with minimal attenuation
+- Suppress the 200 kHz PWM carrier frequency by approximately 52 dB
+- Maintain signal integrity while eliminating switching artifacts
+
+## Hardware Reference
+
+### CH32V003J4M6 Pinout Reference
+
+![CH32V003J4M6](./Images/CH32V003J4M6_Pinout_No_Remapping.png)
 
 ## License
 
