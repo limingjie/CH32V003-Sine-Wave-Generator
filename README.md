@@ -26,12 +26,12 @@ The sine wave is approximated using a lookup table with 100 pre-calculated sampl
 
 **Sample Calculation Formula:**
 
-$\text{sine\_table}[n] = \left\lfloor \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2} \right\rfloor$
+$\text{sine\_table}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{\text{clocks}} - 1)}{2}$
 
 Where:
 
 - $n = 0, 1, 2, ..., 99$ (sample index)
-- $N_{clocks} = 240$ (PWM resolution in clock cycles)
+- $N_{\text{clocks}} = 240$ (PWM resolution in clock cycles)
 - The $+1$ offset shifts the sine wave from $[-1, 1]$ to $[0, 2]$ range
 - Division by 2 scales it to $[0, 1]$ range
 - Multiplication by $(N_{clocks} - 1)$ converts to PWM duty cycle values $[0, 239]$
