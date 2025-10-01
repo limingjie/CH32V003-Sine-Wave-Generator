@@ -26,7 +26,7 @@ The sine wave is approximated using a lookup table with 100 pre-calculated sampl
 
 **Sample Calculation Formula:**
 
-$\text{sine table}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$
+$$\text{sine\_table}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$$
 
 Where:
 
@@ -36,21 +36,7 @@ Where:
 - Division by 2 scales it to $[0, 1]$ range
 - Multiplication by $(N_{clocks} - 1)$ converts to PWM duty cycle values $[0, 239]$
 
-### 3. Sample Rate and Output Frequency
-
-The SysTick timer controls the rate at which PWM duty cycle values are updated from the lookup table.
-
-**Timing Relationships:**
-
-- Sample Rate: $f_{sample} = f_{output} \times N_{samples}$
-- Sample Interval: $T_{sample} = \frac{1}{f_{sample}} = \frac{1}{f_{output} \times 100}$
-
-**For 100 Hz output frequency:**
-
-- $f_{sample} = 100 \text{ Hz} \times 100 = 10 \text{ kHz}$
-- $T_{sample} = 100 \text{ μs}$
-
-### 4. Low-Pass Filtering
+### 3. Low-Pass Filtering
 
 The high-frequency PWM signal is converted to an analog sine wave using a simple RC low-pass filter:
 
