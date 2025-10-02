@@ -1,7 +1,7 @@
 /*
- * Smart LED Flashlight - CH32V003
+ * CH32V003 Sine Wave Generator
  *
- * Aug 2025 by Li Mingjie
+ * Sep 2025 by Li Mingjie
  *  - Email:  limingjie@outlook.com
  *  - GitHub: https://github.com/limingjie/
  */
@@ -36,11 +36,6 @@ void systick_init(void)
     SysTick->CMP  = FUNCONF_SYSTEM_CORE_CLOCK / output_frequency / No_OF_SAMPLES - 1;  // 100µs
     SysTick->CNT  = 0;
     SysTick->CTLR = SYSTICK_CTLR_STE | SYSTICK_CTLR_STIE | SYSTICK_CTLR_STCLK;
-}
-
-void disable_systick(void)
-{
-    NVIC_DisableIRQ(SysTicK_IRQn);
 }
 
 void SysTick_Handler(void) __attribute__((interrupt));
@@ -98,7 +93,7 @@ int main(void)
     SystemInit();
     Delay_Ms(50);
 
-    funGpioInitAll();
+    // funGpioInitAll();
 
     // Init TIM1 for PWM
     tim1_pwm_init();

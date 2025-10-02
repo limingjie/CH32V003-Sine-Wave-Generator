@@ -1,18 +1,34 @@
 # CH32V003 Sine Wave Generator
 
-A precision sine wave generator implementation using PWM (Pulse Width Modulation) output from the CH32V003 microcontroller. This design achieves optimal performance for output frequencies below 660 Hz.
+A precision sine wave generator using PWM output from the CH32V003 RISC-V microcontroller. This implementation combines digital signal processing with analog filtering to synthesize clean sinusoidal waveforms, achieving optimal performance for frequencies below 660 Hz.
 
-## Overview
+- [CH32V003 Sine Wave Generator](#ch32v003-sine-wave-generator)
+  - [Schematic](#schematic)
+  - [Output Waveform](#output-waveform)
+  - [Technical Implementation](#technical-implementation)
+    - [System Architecture](#system-architecture)
+    - [PWM Signal Generation](#pwm-signal-generation)
+      - [PWM Duty Cycle Calculation](#pwm-duty-cycle-calculation)
+    - [Analog Signal Reconstruction](#analog-signal-reconstruction)
+    - [Bipolar Sine Wave Conversion](#bipolar-sine-wave-conversion)
+  - [Hardware Reference](#hardware-reference)
+    - [CH32V003 - Microcontroller](#ch32v003---microcontroller)
+    - [LM358 - Operational Amplifier](#lm358---operational-amplifier)
+  - [References](#references)
+  - [License](#license)
 
-This project demonstrates high-resolution sine wave synthesis using a low-cost RISC-V microcontroller. The implementation combines digital signal processing techniques with analog filtering to produce clean sinusoidal outputs suitable for various applications.
 
-## Circuit Schematic
+![Schematic](./Images/CH32V003-Sine-Wave-Generator-Breadboard.png)
+
+## Schematic
 
 ![Schematic](./Images/CH32V003-Sine-Wave-Generator.png)
 
-## Oscilloscope Output
+The [schematic KiCad project](./schematic/CH32V003-Sine-Wave-Generator/)
 
-![Output](./Images/Output.png)
+## Output Waveform
+
+![Output Waveform](./Images/CH32V003-Sine-Wave-Generator-Output.png)
 
 ## Technical Implementation
 
@@ -20,9 +36,9 @@ This project demonstrates high-resolution sine wave synthesis using a low-cost R
 
 The sine wave generation system employs a three-stage approach:
 
-1. **Digital Sample Generation**: Lookup table-based sine wave synthesis
-2. **PWM Modulation**: High-frequency carrier modulation at 200 kHz
-3. **Analog Reconstruction**: RC low-pass filtering for signal reconstruction
+1. **PWM Generation**: High-frequency carrier modulation at 200 kHz
+2. **Analog Reconstruction**: RC low-pass filtering for signal reconstruction
+3. **Bipolar Conversion**: Converting unipolar sine wave to bipolar sine wave and amplification
 
 ### PWM Signal Generation
 
@@ -34,17 +50,15 @@ The CH32V003's Timer 1 (TIM1) generates a high-frequency PWM signal at 200 kHz o
 - PWM Period: $T_{PWM} = \frac{1}{f_{PWM}} = 5 \text{ μs}$
 - Resolution: $N_{clocks} = \frac{f_{system}}{f_{PWM}} = \frac{48 \text{ MHz}}{200 \text{ kHz}} = 240 \text{ clock cycles}$
 
-### Waveform Synthesis
+#### PWM Duty Cycle Calculation
 
 The sine wave is synthesized using a lookup table containing 100 pre-calculated samples. Each sample represents the corresponding PWM duty cycle value for that specific phase angle in the sine wave period.
-
-**Sample Calculation Formula:**
 
 $$\text{sample}[n] = \frac{[\sin(2\pi \cdot \frac{n}{100}) + 1] \cdot (N_{clocks} - 1)}{2}$$
 
 **Where:**
 
-- $n = 0, 1, 2, \ldots, 99$ (sample index)
+- $n = 0, 1, 2, \ldots, 99$
 - $N_{clocks} = 240$ (PWM resolution in clock cycles)
 - The $+1$ offset translates the sine wave from range $[-1, 1]$ to $[0, 2]$
 - Division by 2 normalizes the range to $[0, 1]$
@@ -58,7 +72,7 @@ The high-frequency PWM signal is converted to a smooth analog sine wave using a 
 
 - Resistance: $R = 3.3 \text{ kΩ}$
 - Capacitance: $C = 47 \text{ nF}$
-- Cutoff Frequency: $f_c = \frac{1}{2\pi RC} = \frac{1}{2\pi \times 3300 \times 47 \times 10^{-9}} \approx 1.03 \text{ kHz}$
+- Cutoff Frequency: $$f_c = \frac{1}{2\pi RC} = \frac{1}{2\pi \times 3300 \times 47 \times 10^{-9}} \approx 1.03 \text{ kHz}$$
 
 **Filter Performance:**
 
@@ -68,11 +82,49 @@ The cutoff frequency is strategically chosen to:
 - Suppress the 200 kHz PWM carrier frequency by approximately 52 dB
 - Maintain signal integrity while eliminating switching artifacts
 
+### Bipolar Sine Wave Conversion
+
+According to this [Stack Exchange answer](https://electronics.stackexchange.com/a/725011/306795), the unipolar sine wave is converted to a bipolar sine wave and amplified to $\pm3.3\text{ V}$.
+
+**Quote from the answer on R1 and R2 calculation:**
+> There's a relationship between $V_A$, $V_B$ and $V_{OUT}$ for the following generic circuit:
+>
+> ![OPAMP Calculation](./Images/OPAMP-Calculation.png)
+>
+> The formula is:
+>
+> $$ V_{OUT} = V_B\left( 1 + \frac{R_2}{R_1} \right) - V_A\frac{R_2}{R_1}$$
+>
+> Find two conditions that you know to be true:
+>
+> 1. $V_{OUT} = 0V$ when $V_B=+1.65V$
+> 2. $V_{OUT} = +3.3V$ when $V_B=+3.3V$
+>
+> Plug those values into the formula to obtain two simultaneous equations:
+>
+> $$0 = +1.65\left( 1 + \frac{R_2}{R_1} \right) - V_A\frac{R_2}{R_1}$$
+> $$+3.3 = +3.3\left( 1 + \frac{R_2}{R_1} \right) - V_A\frac{R_2}{R_1}$$
+>
+> Solve them to reveal two quantities, $V_A$ and the ratio $\frac{R_2}{R_1}$. Choose any two resistances in that ratio within reason. Keep them in the kilohms, [for these reasons](https://electronics.stackexchange.com/a/669233/292884).
+
 ## Hardware Reference
 
-### CH32V003J4M6 Pinout Reference
+### CH32V003 - Microcontroller
+
+- [CH32V003 Datasheet](./Documents/CH32V003%20Datasheet%20-%20V1.7.PDF)
+- [CH32V003 Reference Manual](./Documents/CH32V003%20Reference%20Manual%20-%20V1.7.PDF)
 
 ![CH32V003J4M6](./Images/CH32V003J4M6_Pinout_No_Remapping.png)
+
+### LM358 - Operational Amplifier
+
+- [LM358](./Documents/Texas%20Instruments%20-%20LM358.pdf)
+- [How to Properly Configure Unused Operational Amplifiers](./Documents/Texas%20Instruments%20-%20How%20to%20Properly%20Configure%20Unused%20Operational%20Amplifiers.pdf)
+
+## References
+
+- [Simple Circuit - Sinewave Generator with Arduino](https://simple-circuit.com/arduino-sinewave-generator-pwm-rc-low-pass-filter/)
+- [StackExchange - Converting Unipolar Sine Wave from ESP32 to True Bipolar AC Signal (+3.3V to -3.3V) Using an Operational Amplifier](https://electronics.stackexchange.com/a/725011/306795)
 
 ## License
 
